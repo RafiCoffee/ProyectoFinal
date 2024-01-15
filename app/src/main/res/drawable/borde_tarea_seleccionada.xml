@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Fondo transparente para evitar la superposición del contenido -->
+    <item android:drawable="?attr/colorPrimary" />
+
+    <!-- Borde en los lados derecho, superior e inferior -->
+    <item
+        android:left="2dp"
+        android:right="2dp"
+        android:top="0dp"
+        android:bottom="2dp">
+        <shape android:shape="rectangle">
+            <solid android:color="?attr/colorOnBackground" />
+        </shape>
+    </item>
+
+</layer-list>

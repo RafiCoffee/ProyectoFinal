@@ -1,0 +1,16 @@
+<resources>
+    <string name="app_name">ZapeTask</string>
+
+    <string name="zapet">ZapeT</string>
+    <string name="tareas">Tareas</string>
+    <string name="zapet_media">ZapeT Media</string>
+    <string name="navigation_drawer_open">Abrir menú</string>
+    <string name="navigation_drawer_close">Cerrar menú</string>
+    <string name="tema_oscuro">Tema Oscuro</string>
+    <string name="cerrar_sesion">Cerrar Sesion</string>
+    <string name="notas">Notas</string>
+    <string name="tareas_diarias">Tareas Diarias</string>
+    <string name="eventos">Eventos</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+</resources>

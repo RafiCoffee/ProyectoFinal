@@ -1,0 +1,24 @@
+<resources>
+    <!-- Base application theme. -->
+    <style name="ProyectoFinal" parent="Theme.AppCompat.DayNight.NoActionBar">
+        <!-- Customize your dark theme here. -->
+        <item name="colorPrimary">@color/PrimariaOscuro</item>
+        <item name="colorPrimaryVariant">@color/VariantePrimariaOscuro</item>
+        <item name="colorOnPrimary">@color/SobrePrimariaOscuro</item>
+
+        <item name="colorSecondary">@color/SecundariaOscuro</item>
+        <item name="colorSecondaryVariant">@color/SobreSecundariaOscuro</item>
+        <item name="colorOnSecondary">@color/SobreSecundariaOscuro</item>
+
+        <item name="background">@color/FondoOscuro</item>
+        <item name="colorOnBackground">@color/SobreFondoOscuro</item>
+
+        <item name="itemBackground">@color/PrimariaOscuro</item>
+        <item name="itemIconTint">@color/SecundariaOscuro</item>
+        <item name="itemTextColor">@color/Blanco</item>
+
+        <item name="colorTertiary">@color/GrisOscuro</item>
+
+        <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
+    </style>
+</resources>

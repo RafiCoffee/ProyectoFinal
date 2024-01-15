@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="Negro">#FF000000</color>
+    <color name="NegroFondo">#141414</color>
+    <color name="GrisClaro">#D5D5D5</color>
+    <color name="GrisOscuro">#151515</color>
+    <color name="Blanco">#FFFFFFFF</color>
+    <color name="RojoClaro">#FF6666</color>
+    <color name="Rojo">#FF0000</color>
+    <color name="RojoOscuro">#80000F</color>
+    <color name="Azul">#005FFF</color>
+    <color name="AzulOscuro">#0A1596</color>
+    <color name="CyanClaro">#90F5F8</color>
+    <color name="Cyan">#0BB2B7</color>
+    <color name="CyanOscuro">#077679</color>
+    <color name="Celeste">#00DFFF</color>
+    <color name="VerdeMuyClaro">#C7FFBD</color>
+    <color name="VerdeClaro">#8AFF75</color>
+    <color name="Verde">#11D800</color>
+    <color name="VerdeOscuro">#083000</color>
+    <color name="Rosa">#FF00E0</color>
+    <color name="MoradoOscuro">#630071</color>
+    <color name="NaranjaClaro">#F9A681</color>
+    <color name="Naranja">#FF6400</color>
+    <color name="AmarilloClaro">#F7F786</color>
+    <color name="Amarillo">#FFFB00</color>
+    <color name="AmarilloOscuro">#7D7D0A</color>
+    <color name="Carne">#DEB285</color>
+
+    <!-- Tema Claro -->
+    <color name="Primaria">#92AA83</color>
+    <color name="VariantePrimaria">#415137</color>
+    <color name="SobrePrimaria">#55664D</color>
+    <color name="Secundaria">#B084CC</color>
+    <color name="VarianteSecundaria">#190933</color>
+    <color name="SobreSecundaria">#665687</color>
+    <color name="FondoClaro">#E8F7E1</color>
+    <color name="SobreFondoClaro">#DEF4D4</color>
+
+    <!-- Tema Oscuro -->
+    <color name="PrimariaOscuro">#72966B</color>
+    <color name="VariantePrimariaOscuro">#2F362E</color>
+    <color name="SobrePrimariaOscuro">#39422F</color>
+    <color name="SecundariaOscuro">#7B5E99</color>
+    <color name="VarianteSecundariaOscuro">#0F061A</color>
+    <color name="SobreSecundariaOscuro">#3F2F4B</color>
+    <color name="FondoOscuro">#282D1F</color>
+    <color name="SobreFondoOscuro">#373F29</color>
+
+</resources>
