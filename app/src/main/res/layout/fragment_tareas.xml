@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="?attr/background"
-    tools:context="Fragmentos.Tareas">
+    tools:context=".ui.views.fragments.Tareas">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/opcionesSuperiores"

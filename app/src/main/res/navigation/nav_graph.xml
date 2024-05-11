@@ -7,19 +7,19 @@
 
     <fragment
         android:id="@+id/pantallaTareas"
-        android:name="com.example.proyectofinal.Fragmentos.Tareas"
+        android:name="com.example.proyectofinal.ui.views.fragments.Tareas"
         android:label="Tareas"
         tools:layout="@layout/fragment_tareas"/>
 
     <fragment
         android:id="@+id/pantallaZapet"
-        android:name="com.example.proyectofinal.Fragmentos.Zapet"
+        android:name="com.example.proyectofinal.ui.views.fragments.Zapet"
         android:label="ZapeT"
         tools:layout="@layout/fragment_tareas"/>
 
     <fragment
         android:id="@+id/pantallaZapetMedia"
-        android:name="com.example.proyectofinal.Fragmentos.ZapetMedia"
+        android:name="com.example.proyectofinal.ui.views.fragments.ZapetMedia"
         android:label="ZapeT Media"
         tools:layout="@layout/fragment_tareas"/>
 

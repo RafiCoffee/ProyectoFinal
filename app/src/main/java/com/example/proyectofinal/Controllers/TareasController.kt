@@ -5,7 +5,6 @@ import android.content.Context
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
-import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.RadioButton
@@ -14,12 +13,12 @@ import android.widget.TextView
 import android.widget.TimePicker
 import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
-import com.example.proyectofinal.Adapters.AdapterTarea
+import com.example.proyectofinal.ui.adapters.AdapterTarea
 //import com.example.proyectofinal.dao.DaoTareas
 import com.example.proyectofinal.databinding.FragmentNotasBinding
-import com.example.proyectofinal.Dialogos.DialogCallback
-import com.example.proyectofinal.Dialogos.DialogCallbackHora
-import com.example.proyectofinal.Modelos.Tarea
+import com.example.proyectofinal.data.callbacks.DialogCallback
+import com.example.proyectofinal.data.callbacks.DialogCallbackHora
+import com.example.proyectofinal.data.models.Tarea
 import java.util.Calendar
 
 class TareasController(val contexto: Context, val tareasBinding: FragmentNotasBinding) {

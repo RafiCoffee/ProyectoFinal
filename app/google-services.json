@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "780093774524",
+    "firebase_url": "https://zapetask-api-default-rtdb.firebaseio.com",
+    "project_id": "zapetask-api",
+    "storage_bucket": "zapetask-api.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:780093774524:android:c840c9eb04a95f171f8eb9",
+        "android_client_info": {
+          "package_name": "com.example.proyectofinal"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBTncDaHrVP-fL4vvGsu9MeqJ2GLbkIyt8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
