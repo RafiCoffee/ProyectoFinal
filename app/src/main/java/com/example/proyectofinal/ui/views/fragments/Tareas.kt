@@ -1,35 +1,59 @@
 package com.example.proyectofinal.ui.views.fragments
 
-import android.app.AlertDialog
+import android.annotation.SuppressLint
+import android.os.Build
 import android.os.Bundle
-import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ArrayAdapter
-import android.widget.Button
-import android.widget.DatePicker
-import android.widget.EditText
 import android.widget.ImageView
 import android.widget.LinearLayout
-import android.widget.ListView
+import android.widget.ProgressBar
 import android.widget.TextView
+import androidx.annotation.RequiresApi
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.findFragment
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.ViewModelProvider
+import androidx.recyclerview.widget.ItemTouchHelper
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.ViewPager2
 import com.example.proyectofinal.ui.adapters.TareasAdapter
 import com.example.proyectofinal.R
+import com.example.proyectofinal.data.interfaces.TareasListener
+import com.example.proyectofinal.data.models.Tarea
+import com.example.proyectofinal.data.repositories.TareasRepository
+import com.example.proyectofinal.data.services.FirebaseService
+import com.example.proyectofinal.data.services.GeneralService
+import com.example.proyectofinal.data.services.TareasService
+import com.example.proyectofinal.databinding.FragmentTareasBinding
+import com.example.proyectofinal.ui.modelView.FragmentViewModel
+import com.example.proyectofinal.ui.modelView.TareasViewModel
+import com.example.proyectofinal.ui.modelView.TareasViewModelFactory
+import com.example.proyectofinal.ui.views.MainActivity
+import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
+import dagger.hilt.android.AndroidEntryPoint
 import java.util.Calendar
+import javax.inject.Inject
 
-
-class Tareas : Fragment()/*, OnMapReadyCallback*/ {
+@RequiresApi(Build.VERSION_CODES.Q)
+@Suppress("DEPRECATION")
+@AndroidEntryPoint
+class Tareas : Fragment(), TareasListener/*, OnMapReadyCallback*/ {
     //private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
     //private lateinit var geofencingClient: GeofencingClient
-    private lateinit var objetosClaveAdapter: ArrayAdapter<String>
+    private lateinit var recyclerView: RecyclerView
+    private lateinit var annadirElementoBt: ImageView
+    private var tipoTarea = 1
+    private lateinit var tareasBinding: FragmentTareasBinding
 
-    private var objetosList = ArrayList<String>()
+    private lateinit var tareaEliminada: Tarea
+    private var objetosList = mutableListOf<String>()
     private var fechaActual = "${Calendar.getInstance().get(Calendar.DAY_OF_MONTH)}/${Calendar.getInstance().get(Calendar.MONTH) + 1}/${Calendar.getInstance().get(Calendar.YEAR)}"
     private var latitud = 0.0
     private var longitud = 0.0
@@ -41,8 +65,19 @@ class Tareas : Fragment()/*, OnMapReadyCallback*/ {
     private lateinit var contenedorTareas: ViewPager2
     private lateinit var fecha: ConstraintLayout
     private lateinit var fechaElegidaTxt: TextView
+    private lateinit var loadBar: ProgressBar
 
-    private lateinit var fragmentoNotas: Notas
+    @Inject lateinit var generalService: GeneralService
+    @Inject lateinit var tareasService: TareasService
+    @Inject lateinit var firebaseService: FirebaseService
+
+    private var fragmentosIniciados = ArrayList<Boolean>()
+
+    private val viewModel: TareasViewModel by viewModels {
+        val repositorio = TareasRepository(tareasService)
+        val pantallaCrearTarea = (requireActivity() as MainActivity).contenedorCrearTarea
+        TareasViewModelFactory(firebaseService.getUserId(), repositorio, tareasService, pantallaCrearTarea)
+    }
 
     /*private val PERMISOS_DE_UBICACION = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
         arrayOf(
@@ -59,25 +94,40 @@ class Tareas : Fragment()/*, OnMapReadyCallback*/ {
         private const val GEOFENCE_ID = "MiGeofence"
     }*/
 
+    private lateinit var fragmentViewModel: FragmentViewModel
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        fragmentosIniciados.add(false)
+        fragmentosIniciados.add(false)
+        fragmentosIniciados.add(false)
+
+        fragmentViewModel = ViewModelProvider(requireActivity()).get(FragmentViewModel::class.java)
+        fragmentViewModel.recyclerViewList.add(null)
+        fragmentViewModel.recyclerViewList.add(null)
+        fragmentViewModel.recyclerViewList.add(null)
+        fragmentViewModel.listener = this
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_tareas, container, false)
+        tareasBinding = FragmentTareasBinding.inflate(inflater, container, false)
+
+        fragmentViewModel.viewCycleOwnerTareas = viewLifecycleOwner
+
+        return tareasBinding.root
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         //ubi = view.findViewById(R.id.coordenadas)
         //ubiBt = view.findViewById(R.id.ubicacionBt)
-        casaLogo = view.findViewById(R.id.casaLogo)
-        tareasLayout = view.findViewById(R.id.eleccionTareas)
-        contenedorTareas = view.findViewById(R.id.contenedorTareas)
-        fecha = view.findViewById(R.id.eleccionFecha)
-        fechaElegidaTxt = view.findViewById(R.id.fechaActual)
-        fechaElegidaTxt.text = fechaActual
 
         /*
         // Solicitar permisos de ubicación
@@ -104,143 +154,218 @@ class Tareas : Fragment()/*, OnMapReadyCallback*/ {
             //simularTransicionDeGeofence()
         }*/
 
+        asociarElementos(view)
+        iniciarEventos()
+        registerLiveData()
+    }
+
+    private fun asociarElementos(view: View){
+        casaLogo = view.findViewById(R.id.casaLogo)
+        tareasLayout = view.findViewById(R.id.eleccionTareas)
+        contenedorTareas = view.findViewById(R.id.contenedorTareas)
+        fecha = view.findViewById(R.id.eleccionFecha)
+        fechaElegidaTxt = view.findViewById(R.id.fechaActual)
+        loadBar = tareasBinding.myProgressBar
+        fechaElegidaTxt.text = fechaActual
+    }
+
+    private fun iniciarEventos(){
         casaLogo.setOnClickListener {
-            mostrarObjetosClave()
+            generalService.mostrarObjetosClave(requireContext(), objetosList)
         }
 
         fecha.setOnClickListener {
-            mostrarEleccionFecha()
+            generalService.mostrarEleccionFecha(requireContext(), fechaElegidaTxt, viewModel)
         }
 
-        val fragments: MutableList<Fragment> = ArrayList()
-        fragments.add(Notas())
-        fragments.add(TareasDiarias())
-        fragments.add(Eventos())
-
-        val adapter = TareasAdapter(requireActivity())
+        val adapter = TareasAdapter(this)
+        contenedorTareas.isUserInputEnabled = false
         contenedorTareas.setAdapter(adapter)
 
         TabLayoutMediator(
             tareasLayout, contenedorTareas
         ) { tab: TabLayout.Tab, position: Int ->
             when (position) {
-                0 -> tab.setText("Notas")
-                1 -> tab.setText("Tareas Diarias")
-                2 -> tab.setText("Eventos")
+                0 -> {
+                    tab.setText("Notas")
+                    tab.setId(1)
+                }
+                1 -> {
+                    tab.setText("Tareas Diarias")
+                    tab.setId(2)
+                }
+                2 -> {
+                    tab.setText("Eventos")
+                    tab.setId(3)
+                }
             }}.attach()
+
+        contenedorTareas.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
+            override fun onPageSelected(position: Int) {
+                super.onPageSelected(position)
+
+                tipoTarea = position + 1
+                if(fragmentViewModel.recyclerViewList[position] != null){
+                    recyclerView = fragmentViewModel.recyclerViewList[position]!!
+                }
+            }
+        })
     }
 
-    private fun mostrarObjetosClave(){
-        val objetosListAux = ArrayList(objetosList)
-        val contexto = requireContext()
-
-        val builder = AlertDialog.Builder(contexto)
-        builder.setTitle("Introducir Objetos Clave")
-
-        val contenedorPadre = LinearLayout(contexto)
-
-        val parametrosContenedoresHijos =  LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT)
-        parametrosContenedoresHijos.weight = 1f
-
-        val contenedorIzq = LinearLayout(contexto)
-        contenedorIzq.orientation = LinearLayout.VERTICAL
-        contenedorIzq.gravity = Gravity.CENTER
-        contenedorIzq.layoutParams = parametrosContenedoresHijos
-        contenedorIzq.setPadding(10,5,10,5)
-
-        val contenedorDer = LinearLayout(contexto)
-        contenedorDer.orientation = LinearLayout.VERTICAL
-        contenedorDer.gravity = Gravity.CENTER
-        contenedorDer.layoutParams = parametrosContenedoresHijos
-        contenedorDer.setPadding(10,5,10,5)
-
-        val objetoClaveTxt = TextView(contexto)
-        objetoClaveTxt.text = "Objeto:"
-        contenedorIzq.addView(objetoClaveTxt)
-        val objetoClave = EditText(contexto)
-        objetoClave.hint = "Introduce un objeto"
-        contenedorIzq.addView(objetoClave)
-
-        val introducirBt = Button(contexto)
-        introducirBt.text = "Introducir"
-        contenedorIzq.addView(introducirBt)
-
-        val eliminarBt = Button(contexto)
-        eliminarBt.text = "Eliminar"
-        contenedorIzq.addView(eliminarBt)
-
-        val contenedorLista = LinearLayout(contexto)
-        contenedorLista.layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, 400)
-        val listaObjetos = ListView(contexto)
-        listaObjetos.layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT)
-        objetosClaveAdapter = ArrayAdapter(contexto, R.layout.list_objetos_clave, objetosListAux)
-        listaObjetos.adapter = objetosClaveAdapter
-        contenedorLista.addView(listaObjetos)
-        contenedorDer.addView(contenedorLista)
-
-        contenedorPadre.addView(contenedorIzq)
-        contenedorPadre.addView(contenedorDer)
-
-        builder.setView(contenedorPadre)
-
-        listaObjetos.setOnItemClickListener { _, _, position, _ ->
-            objetoClave.setText(objetosListAux[position])
+    private fun registerLiveData(){
+        viewModel.loading.observe(viewLifecycleOwner) {
+            if(it){
+                loadBar.visibility = LinearLayout.VISIBLE
+            }else{
+                loadBar.visibility = LinearLayout.GONE
+            }
         }
 
-        introducirBt.setOnClickListener {
-            objetosListAux.add(objetoClave.text.toString())
-            objetosClaveAdapter.notifyDataSetChanged()
-            objetoClave.text.clear()
+        if (fragmentosIniciados[0]){
+            viewModel.tareasNota.observe(viewLifecycleOwner) { listaTareas ->
+                recyclerView = fragmentViewModel.recyclerViewList[0]!!
+                tipoTarea = 1
+                viewModel.setAdapter(recyclerView, tipoTarea)
+                recyclerView.adapter?.notifyDataSetChanged()
+            }
         }
 
-        eliminarBt.setOnClickListener {
-            objetosListAux.remove(objetoClave.text.toString())
-            objetosClaveAdapter.notifyDataSetChanged()
-            objetoClave.text.clear()
+        if (fragmentosIniciados[1]) {
+            viewModel.tareasDiarias.observe(viewLifecycleOwner) { listaTareas ->
+                recyclerView = fragmentViewModel.recyclerViewList[1]!!
+                tipoTarea = 2
+                viewModel.setAdapter(recyclerView, tipoTarea)
+                recyclerView.adapter?.notifyDataSetChanged()
+            }
         }
 
-        builder.setPositiveButton("Aceptar"){ _, _ ->
-            objetosList = objetosListAux
+        if (fragmentosIniciados[2]) {
+            viewModel.tareasEvento.observe(viewLifecycleOwner) { listaTareas ->
+                recyclerView = fragmentViewModel.recyclerViewList[2]!!
+                tipoTarea = 3
+                viewModel.setAdapter(recyclerView, tipoTarea)
+                recyclerView.adapter?.notifyDataSetChanged()
+            }
         }
+    }
+    private fun iniciarRecyclerView(recyclerViewActual: RecyclerView) {
+        recyclerView = recyclerViewActual
+        recyclerView.layoutManager = LinearLayoutManager(requireContext())
 
-        builder.setNegativeButton("Cancelar"){ dialog, _ ->
-            dialog.cancel()
-        }
-
-        builder.show()
+        val ItemTouchHelper = ItemTouchHelper(simpleCallback)
+        ItemTouchHelper.attachToRecyclerView(recyclerView)
+        //myProgressBar = videojuegosBinding.barraCarga
     }
 
-    private fun mostrarEleccionFecha(){
-        var fechaSeleccionada = ""
-        val contexto = requireContext()
+    private var simpleCallback = object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT){
+        override fun onMove(
+            recyclerView: RecyclerView,
+            viewHolder: RecyclerView.ViewHolder,
+            target: RecyclerView.ViewHolder
+        ): Boolean {
+            val startPosition = viewHolder.adapterPosition
+            val endPosition = target.adapterPosition
 
-        val builder = AlertDialog.Builder(contexto)
-
-        val contenedorPadre = LinearLayout(contexto)
-
-        val calendario = DatePicker(contexto)
-        calendario.spinnersShown = true
-        calendario.calendarViewShown = false
-        val fechaActual = Calendar.getInstance()
-        calendario.minDate = fechaActual.timeInMillis
-        calendario.init(fechaActual.get(Calendar.YEAR), fechaActual.get(Calendar.MONTH), fechaActual.get(Calendar.DAY_OF_MONTH)
-        ) { _, year, month, day ->
-            val realMonth = month + 1
-            fechaSeleccionada = "$day/$realMonth/$year"
-        }
-        contenedorPadre.addView(calendario)
-
-        builder.setView(contenedorPadre)
-
-        builder.setPositiveButton("Aceptar"){ _, _ ->
-            fechaElegidaTxt.text = fechaSeleccionada
+            //Collections.swap(control.getListTareas(), startPosition, endPosition)
+            recyclerView.adapter?.notifyItemMoved(startPosition, endPosition)
+            return true
         }
 
-        builder.setNegativeButton("Cancelar"){ dialog, _ ->
-            dialog.cancel()
+        override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+            val pos = viewHolder.adapterPosition
+
+            when(direction){
+                ItemTouchHelper.LEFT -> {
+                    tareaEliminada = viewModel.getTarea(pos, tipoTarea)!!
+                    var isTareaEliminada = true
+
+                    val mensajeEliminacion = Snackbar.make(recyclerView, "${tareaEliminada.nombreTarea} ha sido eliminada", Snackbar.LENGTH_LONG).setAction("Deshacer", View.OnClickListener {
+                        isTareaEliminada = false
+                        viewModel.loadTareas(fechaElegidaTxt.text.toString())
+                    })
+
+                    mensajeEliminacion.addCallback(object : Snackbar.Callback() {
+                        override fun onDismissed(transientBottomBar: Snackbar?, event: Int) {
+                            if(isTareaEliminada){
+                                viewModel.eliminarTareaRepo(pos, tipoTarea)
+                            }
+                        }
+                    })
+
+                    mensajeEliminacion.show()
+
+                }
+            }
         }
 
-        builder.show()
+    }
+
+    @SuppressLint("NotifyDataSetChanged")
+    override fun cargaTarea(idFragmento: Int) {
+        lateinit var recyclerViewActual: RecyclerView
+        lateinit var fragmentoActual: Fragment
+        when (idFragmento) {
+            1 -> {
+                fragmentoActual = tareasBinding.root.findViewById<ConstraintLayout?>(R.id.fragmentoNotas).findFragment<Notas>()
+                recyclerViewActual = fragmentoActual.tareasBinding.myRecyclerView
+                annadirElementoBt = fragmentoActual.tareasBinding.annadirElementoBt
+
+                fragmentViewModel.recyclerViewList[0] = recyclerViewActual
+                fragmentosIniciados[0] = true
+            }
+
+            2 -> {
+                fragmentoActual = tareasBinding.root.findViewById<ConstraintLayout?>(R.id.fragmentoTareasDiarias).findFragment<TareasDiarias>()
+                recyclerViewActual = fragmentoActual.tareasBinding.myRecyclerView
+                annadirElementoBt = fragmentoActual.tareasBinding.annadirElementoBt
+
+                fragmentViewModel.recyclerViewList[1] = recyclerViewActual
+                fragmentosIniciados[1] = true
+            }
+
+            3 -> {
+                fragmentoActual = tareasBinding.root.findViewById<ConstraintLayout?>(R.id.fragmentoEventos).findFragment<Eventos>()
+                recyclerViewActual = fragmentoActual.tareasBinding.myRecyclerView
+                annadirElementoBt = fragmentoActual.tareasBinding.annadirElementoBt
+
+                fragmentViewModel.recyclerViewList[2] = recyclerViewActual
+                fragmentosIniciados[2] = true
+            }
+        }
+
+        tipoTarea = idFragmento
+        iniciarRecyclerView(recyclerViewActual)
+
+        viewModel.setAdapter(recyclerView, tipoTarea)
+        viewModel.setAddButton(annadirElementoBt, tipoTarea, fechaElegidaTxt.text.toString())
+
+        var lifeCycle: LifecycleOwner
+        if(fragmentViewModel.viewCycleOwnerTareas != null){
+            lifeCycle = fragmentViewModel.viewCycleOwnerTareas!!
+        }else{
+            lifeCycle = viewLifecycleOwner
+        }
+
+        if (viewModel.tareasNota.isInitialized) {
+            viewModel.tareasNota.observe(lifeCycle) { listaTareas ->
+                viewModel.setAdapter(recyclerView, tipoTarea)
+                recyclerView.adapter?.notifyDataSetChanged()
+            }
+        }
+
+        if (viewModel.tareasDiarias.isInitialized) {
+            viewModel.tareasDiarias.observe(lifeCycle) { listaTareas ->
+                viewModel.setAdapter(recyclerView, tipoTarea)
+                recyclerView.adapter?.notifyDataSetChanged()
+            }
+        }
+
+        if (viewModel.tareasEvento.isInitialized) {
+            viewModel.tareasEvento.observe(lifeCycle) { listaTareas ->
+                viewModel.setAdapter(recyclerView, tipoTarea)
+                recyclerView.adapter?.notifyDataSetChanged()
+            }
+        }
     }
 
     /*

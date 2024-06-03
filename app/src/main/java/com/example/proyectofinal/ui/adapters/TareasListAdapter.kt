@@ -24,9 +24,9 @@ class TareasListAdapter(val miContexto: Context, val datos: List<Tarea>) : Array
         val textViewTitulo = itemView!!.findViewById<TextView>(R.id.textTarea)
         val textViewHora = itemView.findViewById<TextView>(R.id.textHora)
 
-        textViewTitulo.text = currentItem?.tarea
-        if(currentItem?.horas != null && currentItem?.minutos != null) {
-            textViewHora.text = "${currentItem?.horas.toString()}:${currentItem?.minutos.toString()}"
+        textViewTitulo.text = currentItem?.nombreTarea
+        if(currentItem?.hora?.isNotEmpty()!!) {
+            textViewHora.text = currentItem.hora
         }else{
             textViewHora.text = ""
         }

@@ -7,10 +7,24 @@
     android:background="?attr/background"
     tools:context=".ui.views.fragments.ZapetMedia">
 
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/main_media_recycler_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
+
+    <ProgressBar
+        android:id="@+id/loadBar"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
+
     <TextView
+        android:id="@+id/mensaje_sin_amigos"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:text="Cosas"
-        android:textSize="50sp"/>
+        android:gravity="center"
+        android:text="No tienes amigos agregados"
+        android:textSize="40sp"
+        android:textAlignment="center"
+        android:visibility="gone"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

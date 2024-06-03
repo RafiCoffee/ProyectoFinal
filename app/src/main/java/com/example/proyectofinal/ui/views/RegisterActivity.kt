@@ -3,20 +3,30 @@ package com.example.proyectofinal.ui.views
 import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.content.SharedPreferences
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.os.Build
 import android.os.Bundle
+import android.util.Base64
+import android.util.Log
 import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import com.example.proyectofinal.R
 import com.example.proyectofinal.data.models.Usuario
+import com.example.proyectofinal.data.services.FirebaseService
 import com.example.proyectofinal.data.services.GeneralService
 import com.example.proyectofinal.data.services.UserService
 import com.google.firebase.auth.FirebaseAuthException
+import com.google.firebase.storage.FirebaseStorage
 import dagger.hilt.android.AndroidEntryPoint
+import java.io.ByteArrayOutputStream
 import javax.inject.Inject
 
+@RequiresApi(Build.VERSION_CODES.Q)
 @AndroidEntryPoint
 class RegisterActivity : AppCompatActivity() {
     private lateinit var usernameTxt: EditText
@@ -29,6 +39,7 @@ class RegisterActivity : AppCompatActivity() {
 
     @Inject lateinit var generalService: GeneralService
     @Inject lateinit var userService: UserService
+    @Inject lateinit var firebaseService: FirebaseService
 
     private var errorActual: String = ""
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -36,14 +47,13 @@ class RegisterActivity : AppCompatActivity() {
         setContentView(R.layout.activity_registro)
 
         if(generalService.comprobarUsuarioLogueado(this)){
-            registerIntents(true)
+            registerIntents(true, null)
         }
 
         asociarElementos()
         iniciarEventos()
 
-        generalService.setTema(this)
-
+        //generalService.setTema(this)
     }
     private fun asociarElementos(){
         usernameTxt = findViewById(R.id.usernameEditTxt)
@@ -62,10 +72,10 @@ class RegisterActivity : AppCompatActivity() {
             val nombre = usernameTxt.text.toString()
             val email = emailTxt.text.toString()
             val clave = claveTxt.text.toString()
-            val foto = null
 
             if (comprobarRegistro(nombre, email, clave)){
-                registrarUsuario(nombre, email, clave, foto)
+                val nuevoUsuario = Usuario(userService.generateUserId()!!, nombre, email, clave, null, userService.generateFriendId(), emptyList())
+                registerIntents(true, nuevoUsuario)
             }else{
                 errorTxt.text = errorActual
             }
@@ -73,7 +83,7 @@ class RegisterActivity : AppCompatActivity() {
 
         //Pantalla Inicio Sesión
         iniciarSesionTxtBt.setOnClickListener {
-            registerIntents(false)
+            registerIntents(false, null)
         }
     }
     private fun comprobarRegistro(nombre: String, email: String, clave: String): Boolean{
@@ -98,29 +108,11 @@ class RegisterActivity : AppCompatActivity() {
 
         return isRegistroCorrecto
     }
-    private fun registrarUsuario(nombre: String, email: String, clave: String, foto: String?){
-        val newUser = Usuario(nombre, email, clave, foto)
-
-        if(userService.registrarUsuario(newUser)){
-            userService.iniciarSesion(generalService.getAuth(), email, clave)
-                .addOnSuccessListener { iniciado ->
-                    // Operación de inicio de sesión exitosa
-                    val user = iniciado.user
-                    registerIntents(true)
-                }
-                .addOnFailureListener { e ->
-                    // Error durante el inicio de sesión
-                    val errorCode = (e as FirebaseAuthException).errorCode
-                    // Maneja el error
-                }
-        }else{
-            errorActual = "Error desconocido al crear el usuario"
-            errorTxt.text = errorActual
-        }
-    }
-    private fun registerIntents(toHome: Boolean){
+    private fun registerIntents(toHome: Boolean, usuario: Usuario?){
         val intentActivity = if(toHome){
-            Intent(this, MainActivity::class.java)
+            Intent(this, SplashActivity::class.java).apply {
+                putExtra("usuario", usuario)
+            }
         }else{
             Intent(this, InicioSesionActivity::class.java)
         }

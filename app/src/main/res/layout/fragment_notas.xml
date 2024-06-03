@@ -27,15 +27,4 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"/>
 
-    <ImageView
-        android:id="@+id/eliminarElemento"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
-        android:src="@drawable/papelera_icon"
-        android:layout_marginBottom="10dp"
-        android:layout_marginEnd="10dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:tint="?attr/colorPrimary"/>
-
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -3,12 +3,14 @@ package com.example.proyectofinal.ui.views
 import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.proyectofinal.R
+import com.example.proyectofinal.data.services.FirebaseService
 import com.example.proyectofinal.data.services.GeneralService
 import com.example.proyectofinal.data.services.UserService
 import dagger.hilt.android.AndroidEntryPoint
@@ -24,6 +26,7 @@ class InicioSesionActivity: AppCompatActivity() {
 
     @Inject lateinit var generalService: GeneralService
     @Inject lateinit var userService: UserService
+    @Inject lateinit var firebaseService: FirebaseService
 
     private var errorActual: String = ""
 
@@ -31,7 +34,7 @@ class InicioSesionActivity: AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_inicio_sesion)
 
-        generalService.setTema(this)
+        //generalService.setTema(this)
         asociarElementos()
         iniciarEventos()
     }
@@ -50,34 +53,21 @@ class InicioSesionActivity: AppCompatActivity() {
             val email = emailTxt.text.toString()
             val clave = claveTxt.text.toString()
 
-            comprobarInicioSesion(email, clave)
+            inicioSesionIntents(true, email, clave)
         }
 
         //Pantalla Inicio Sesión
         registerTxtBt.setOnClickListener {
-            inicioSesionIntents(false)
+            inicioSesionIntents(false, null, null)
         }
     }
-    private fun comprobarInicioSesion(email: String, clave: String){
-        val auth = generalService.getAuth()
-        userService.iniciarSesion(auth, email, clave)
-            .addOnCompleteListener { task ->
-                if(task.isSuccessful){
-                    inicioSesionIntents(true)
-                }else{
-                    errorActual = "Error al iniciar sesión"
-                    errorTxt.text = errorActual
-                }
-            }
-            .addOnFailureListener {
-                errorActual = "Credenciales no válidas"
-                errorTxt.text = errorActual
-            }
-    }
 
-    private fun inicioSesionIntents(toHome: Boolean){
+    private fun inicioSesionIntents(toHome: Boolean, email: String?, clave: String?){
         val intentActivity = if(toHome){
-            Intent(this, MainActivity::class.java)
+            Intent(this, SplashActivity::class.java).apply {
+                putExtra("email", email)
+                putExtra("clave", clave)
+            }
         }else{
             Intent(this, RegisterActivity::class.java)
         }

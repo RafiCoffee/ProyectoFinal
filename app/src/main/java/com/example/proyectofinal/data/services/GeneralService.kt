@@ -2,56 +2,34 @@ package com.example.proyectofinal.data.services
 
 import android.app.Activity
 import android.app.AlertDialog
-import android.content.ActivityNotFoundException
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.Context
 import android.content.Context.MODE_PRIVATE
 import android.content.Intent
 import android.content.SharedPreferences
-import android.net.Uri
 import android.provider.MediaStore
-import android.util.Log
+import android.util.DisplayMetrics
 import android.view.Gravity
-import android.widget.ImageView
+import android.view.WindowManager
+import android.widget.ArrayAdapter
+import android.widget.Button
+import android.widget.DatePicker
+import android.widget.EditText
 import android.widget.LinearLayout
+import android.widget.ListView
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatDelegate
-import androidx.cardview.widget.CardView
-import androidx.core.content.ContextCompat.startActivity
+import androidx.core.content.ContextCompat.getSystemService
 import com.example.proyectofinal.R
-import com.example.proyectofinal.ui.views.InicioSesionActivity
-import com.example.proyectofinal.ui.views.MainActivity
-import com.google.firebase.Firebase
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.storage.FirebaseStorage
+import com.example.proyectofinal.ui.modelView.TareasViewModel
+import java.text.SimpleDateFormat
+import java.util.Calendar
 import javax.inject.Inject
 
-class GeneralService @Inject constructor() {
+class GeneralService @Inject constructor(private var firebaseService: FirebaseService) {
     private lateinit var sP: SharedPreferences
-    fun cambioFotoPerfil(context : Context){
-
-        val builder = AlertDialog.Builder(context)
-        builder.setTitle("Cambiar Foto De Perfil")
-
-        val contenedorPadre = LinearLayout(context)
-        contenedorPadre.orientation = LinearLayout.VERTICAL
-        contenedorPadre.gravity = Gravity.CENTER
-
-        val cardViewRedondo = CardView(context)
-        cardViewRedondo.radius = 1000f
-        cardViewRedondo.cardElevation = 10f
-        cardViewRedondo.layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT)
-        val fotoPerfil = ImageView(context)
-        fotoPerfil.setImageResource(R.drawable.foto_perfil)
-        fotoPerfil.layoutParams = LinearLayout.LayoutParams(500, 500)
-        fotoPerfil.scaleType = ImageView.ScaleType.CENTER_CROP
-        cardViewRedondo.addView(fotoPerfil)
-        contenedorPadre.addView(cardViewRedondo)
-
-        builder.setView(contenedorPadre)
-
-        builder.show()
-    }
 
     fun abrirGaleria(activity: Activity) {
         val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
@@ -73,6 +51,14 @@ class GeneralService @Inject constructor() {
         }
     }
 
+    fun copiarPortapapeles(texto: String, context: Context) {
+        val clipboardManager = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+        val clip = ClipData.newPlainText("Texto copiado", texto)
+        clipboardManager.setPrimaryClip(clip)
+
+        Toast.makeText(context, "Texto copiado al portapapeles", Toast.LENGTH_SHORT).show()
+    }
+
     fun comprobarUsuarioLogueado(context: Context) : Boolean{
         sP = context.getSharedPreferences("ShPr", MODE_PRIVATE)
         return sP.getBoolean("UsuarioLogueado",false)
@@ -80,7 +66,7 @@ class GeneralService @Inject constructor() {
     fun setUsuarioLogueado(context: Context, isLogueado: Boolean){
         val sPEdit = context.getSharedPreferences("ShPr", MODE_PRIVATE).edit()
         sPEdit.putBoolean("UsuarioLogueado", isLogueado)
-        sPEdit.commit()
+        sPEdit.apply()
     }
 
     fun isValidEmail(email: String): Boolean {
@@ -88,70 +74,140 @@ class GeneralService @Inject constructor() {
         return regex.matches(email)
     }
 
-    fun getAuth(): FirebaseAuth{
-        return FirebaseAuth.getInstance()
-    }
-    fun getStorage(): FirebaseStorage{
-        return FirebaseStorage.getInstance()
+    fun mostrarObjetosClave(contexto: Context, objetosList: MutableList<String>){
+        val objetosListAux = objetosList
+
+        val builder = AlertDialog.Builder(contexto)
+        builder.setTitle("Introducir Objetos Clave")
+
+        val contenedorPadre = LinearLayout(contexto)
+
+        val parametrosContenedoresHijos =  LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT)
+        parametrosContenedoresHijos.weight = 1f
+
+        val contenedorIzq = LinearLayout(contexto)
+        contenedorIzq.orientation = LinearLayout.VERTICAL
+        contenedorIzq.gravity = Gravity.CENTER
+        contenedorIzq.layoutParams = parametrosContenedoresHijos
+        contenedorIzq.setPadding(10,5,10,5)
+
+        val contenedorDer = LinearLayout(contexto)
+        contenedorDer.orientation = LinearLayout.VERTICAL
+        contenedorDer.gravity = Gravity.CENTER
+        contenedorDer.layoutParams = parametrosContenedoresHijos
+        contenedorDer.setPadding(10,5,10,5)
+
+        val objetoClaveTxt = TextView(contexto)
+        objetoClaveTxt.text = "Objeto:"
+        contenedorIzq.addView(objetoClaveTxt)
+        val objetoClave = EditText(contexto)
+        objetoClave.hint = "Introduce un objeto"
+        contenedorIzq.addView(objetoClave)
+
+        val introducirBt = Button(contexto)
+        introducirBt.text = "Introducir"
+        contenedorIzq.addView(introducirBt)
+
+        val eliminarBt = Button(contexto)
+        eliminarBt.text = "Eliminar"
+        contenedorIzq.addView(eliminarBt)
+
+        val contenedorLista = LinearLayout(contexto)
+        contenedorLista.layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, 400)
+        val listaObjetos = ListView(contexto)
+        listaObjetos.layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT)
+        val objetosClaveAdapter = ArrayAdapter(contexto, R.layout.list_objetos_clave, objetosListAux)
+        listaObjetos.adapter = objetosClaveAdapter
+        contenedorLista.addView(listaObjetos)
+        contenedorDer.addView(contenedorLista)
+
+        contenedorPadre.addView(contenedorIzq)
+        contenedorPadre.addView(contenedorDer)
+
+        builder.setView(contenedorPadre)
+
+        /*listaObjetos.setOnItemClickListener { _, _, position, _ ->
+            objetoClave.text = objetosListAux.get(position)
+        }*/
+
+        introducirBt.setOnClickListener {
+            objetosListAux.add(objetoClave.text.toString())
+            objetosClaveAdapter.notifyDataSetChanged()
+            objetoClave.text.clear()
+        }
+
+        eliminarBt.setOnClickListener {
+            objetosListAux.remove(objetoClave.text.toString())
+            objetosClaveAdapter.notifyDataSetChanged()
+            objetoClave.text.clear()
+        }
+
+        builder.setPositiveButton("Aceptar"){ _, _ ->
+            objetosList.removeAll(objetosList)
+            objetosList.addAll(objetosListAux)
+        }
+
+        builder.setNegativeButton("Cancelar"){ dialog, _ ->
+            dialog.cancel()
+        }
+
+        builder.show()
     }
 
-    fun cerrarSesion(context: Context){
-        setUsuarioLogueado(context, false)
-        val auth = getAuth()
-        auth.signOut()
+    fun mostrarEleccionFecha(contexto: Context, fechaElegidaTxt: TextView, viewModel: TareasViewModel){
+        var fechaSeleccionada = fechaElegidaTxt.text.toString()
 
-        val intentInicioSesion = Intent(context, InicioSesionActivity::class.java)
-        try {
-            context.startActivity(intentInicioSesion)
-        }catch (e : ActivityNotFoundException){
-            Toast.makeText(context, "Error al acceder a la pantalla", Toast.LENGTH_SHORT).show()
+        val builder = AlertDialog.Builder(contexto)
+
+        val contenedorPadre = LinearLayout(contexto)
+
+        val calendario = DatePicker(contexto)
+        calendario.spinnersShown = true
+        calendario.calendarViewShown = false
+        val fechaActual = Calendar.getInstance()
+        calendario.minDate = fechaActual.timeInMillis
+        var fechaActualSeleccionada = fechaSeleccionada.toCalendar()
+        calendario.init(fechaActualSeleccionada.get(Calendar.YEAR), fechaActualSeleccionada.get(Calendar.MONTH), fechaActualSeleccionada.get(Calendar.DAY_OF_MONTH)
+        ) { _, year, month, day ->
+            val realMonth = month + 1
+            fechaSeleccionada = "$day/$realMonth/$year"
+        }
+        contenedorPadre.addView(calendario)
+
+        builder.setView(contenedorPadre)
+
+        builder.setPositiveButton("Aceptar"){ _, _ ->
+            fechaElegidaTxt.text = fechaSeleccionada
+            viewModel.loadFecha(fechaSeleccionada)
+        }
+
+        builder.setNegativeButton("Cancelar"){ dialog, _ ->
+            dialog.cancel()
+        }
+
+        builder.show()
+    }
+
+    fun String.toCalendar(dateFormat: String = "dd/MM/yyyy"): Calendar {
+        val sdf = SimpleDateFormat(dateFormat)
+        val date = sdf.parse(this)
+        return Calendar.getInstance().apply {
+            time = date
         }
     }
 
-    /*fun descargarImagen(){
-        val storageRef = FirebaseStorage.getInstance().reference
-        val imagesRef = storageRef.child("images")
-        val imageRef = imagesRef.child("nombre_de_tu_imagen.jpg")
-
-        imageRef.downloadUrl.addOnSuccessListener { uri ->
-            val imageUrl = uri.toString()
-            // Ahora puedes usar imageUrl para mostrar la imagen en tu aplicación
-        }.addOnFailureListener {
-            // Error al obtener la URL de descarga de la imagen
-        }
+    fun getScreenWidth(context: Context): Int {
+        val displayMetrics = DisplayMetrics()
+        val windowManager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
+        windowManager.defaultDisplay.getMetrics(displayMetrics)
+        return displayMetrics.widthPixels
     }
 
-    fun subirImagenFirebaseStorage(imageUri: Uri) {
-        val storageRef = getStorage().reference
-        val imagesRef = storageRef.child("images/${imageUri.lastPathSegment}")
-        val uploadTask = imagesRef.putFile(imageUri)
-
-        uploadTask.addOnSuccessListener { taskSnapshot ->
-            // Obtener la URL de descarga de la imagen y guardarla en la base de datos
-            imagesRef.downloadUrl.addOnSuccessListener { uri ->
-                val downloadUrl = uri.toString()
-                // Guardar la URL de descarga en Firebase Realtime Database
-                subirImagenFirebaseRealDatabase(downloadUrl)
-            }
-        }.addOnFailureListener { exception ->
-            // Manejar errores de carga de la imagen
-        }
+    fun getScreenHeight(context: Context): Int {
+        val displayMetrics = DisplayMetrics()
+        val windowManager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
+        windowManager.defaultDisplay.getMetrics(displayMetrics)
+        return displayMetrics.heightPixels
     }
 
-    fun subirImagenFirebaseRealDatabase(imageUrl: String){
-        val userId = FirebaseAuth.getInstance().currentUser?.uid
-        if (userId != null) {
-            val databaseRef = FirebaseDatabase.getInstance().getReference("usuarios").child(userId)
-            val userData = hashMapOf(
-                "foto" to imageUrl
-            )
-            databaseRef.updateChildren(userData as Map<String, String>)
-                .addOnSuccessListener {
-                    // La URL de la imagen se ha guardado correctamente en la base de datos
-                }
-                .addOnFailureListener { exception ->
-                    // Manejar errores al guardar la URL de la imagen
-                }
-        }
-    }*/
 }

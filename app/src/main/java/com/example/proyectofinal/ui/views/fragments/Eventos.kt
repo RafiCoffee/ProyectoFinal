@@ -16,156 +16,50 @@ import android.widget.RadioButton
 import android.widget.RadioGroup
 import android.widget.TextView
 import android.widget.TimePicker
+import android.widget.Toast
+import androidx.lifecycle.ViewModelProvider
+import androidx.recyclerview.widget.RecyclerView
 import com.example.proyectofinal.ui.adapters.TareasListAdapter
 import com.example.proyectofinal.data.models.Tarea
 import com.example.proyectofinal.R
+import com.example.proyectofinal.data.interfaces.TareasListener
+import com.example.proyectofinal.databinding.FragmentEventosBinding
+import com.example.proyectofinal.databinding.FragmentNotasBinding
+import com.example.proyectofinal.ui.modelView.FragmentViewModel
 import java.util.Calendar
 
-class Eventos : Fragment() {
-    val hoy = Calendar.getInstance()
+class Eventos constructor() : Fragment() {
+    private lateinit var listener: TareasListener
 
-    private lateinit var eventosAdapter: ArrayAdapter<Tarea>
-    private var eventosList = ArrayList<Tarea>()
+    lateinit var tareasBinding: FragmentEventosBinding
+    private lateinit var myRecyclerView: RecyclerView
 
-    private lateinit var listaeventos: ListView
-    private lateinit var annadirElementoBt: ImageView
-    private lateinit var horaElegida: TextView
+    private lateinit var viewModel: FragmentViewModel
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        viewModel = ViewModelProvider(requireActivity())[FragmentViewModel::class.java]
+        viewModel.listener.let {
+            if (it != null) {
+                listener = it
+            }
+        }
+    }
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_eventos, container, false)
+        tareasBinding = FragmentEventosBinding.inflate(inflater, container, false)
+        myRecyclerView = tareasBinding.root.findViewById(R.id.my_recycler_view)
+
+        return tareasBinding.root
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
+    override fun onStart() {
+        super.onStart()
 
-        listaeventos = view.findViewById(R.id.listaTareas)
-        annadirElementoBt = view.findViewById(R.id.annadirElementoBt)
-
-        eventosAdapter = TareasListAdapter(requireContext(), eventosList)
-        listaeventos.adapter = eventosAdapter
-
-        annadirElementoBt.setOnClickListener {
-            mostrarAnnadirTarea()
-        }
-    }
-
-    private fun mostrarAnnadirTarea(){
-        val contexto = requireContext()
-
-        val builder = AlertDialog.Builder(contexto)
-        builder.setTitle("Añade Un Evento")
-
-        val contenedorPadre = LinearLayout(contexto)
-        contenedorPadre.orientation = LinearLayout.VERTICAL
-
-        val tituloTareaTxt = TextView(contexto)
-        tituloTareaTxt.text = "Título:"
-        contenedorPadre.addView(tituloTareaTxt)
-        val tituloTarea = EditText(contexto)
-        tituloTarea.hint = "Introduce el título"
-        contenedorPadre.addView(tituloTarea)
-
-        val descripcionTareaTxt = TextView(contexto)
-        descripcionTareaTxt.text = "Descripción:"
-        contenedorPadre.addView(descripcionTareaTxt)
-        val descripcionTarea = EditText(contexto)
-        descripcionTarea.hint = "Introduce una breve descripción, si es necesario"
-        contenedorPadre.addView(descripcionTarea)
-
-        val tareaConHoraTxt = TextView(contexto)
-        tareaConHoraTxt.text = "Hora:"
-        contenedorPadre.addView(tareaConHoraTxt)
-        val tareaConHora = RadioGroup(contexto)
-        tareaConHora.orientation = LinearLayout.HORIZONTAL
-
-        val listaRadioBt = mutableListOf<RadioButton>()
-        val conHora = RadioButton(contexto)
-        conHora.id = View.generateViewId()
-        conHora.text = "Si"
-        tareaConHora.addView(conHora)
-        listaRadioBt.add(conHora)
-        val sinHora = RadioButton(contexto)
-        sinHora.id = View.generateViewId()
-        sinHora.text = "No"
-        tareaConHora.addView(sinHora)
-        listaRadioBt.add(sinHora)
-
-        val elegirHora = Button(contexto)
-        elegirHora.text = "Escoger Hora"
-        elegirHora.layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply {
-            marginStart = 100
-            marginEnd = 50
-        }
-        horaElegida = TextView(contexto)
-        val horas = hoy.get(Calendar.HOUR).toString().padEnd(2, '0')
-        val minutos = hoy.get(Calendar.MINUTE).toString().padEnd(2, '0')
-        horaElegida.text = "$horas:$minutos"
-        horaElegida.textSize = 25f
-        contenedorPadre.addView(tareaConHora)
-
-        tareaConHora.setOnCheckedChangeListener { _, checkedId ->
-            when (checkedId) {
-                conHora.id -> {
-                    tareaConHora.addView(elegirHora)
-                    tareaConHora.addView(horaElegida)
-                }
-                sinHora.id -> {
-                    tareaConHora.removeView(elegirHora)
-                    tareaConHora.removeView(horaElegida)
-                }
-            }
-        }
-
-        elegirHora.setOnClickListener {
-            mostrarEleccionHora()
-        }
-
-        builder.setView(contenedorPadre)
-
-        builder.setPositiveButton("Aceptar"){ _, _ ->
-            var nuevaTarea: Tarea
-            val fechaString = "${hoy.get(Calendar.DAY_OF_MONTH)}/${hoy.get(Calendar.MONTH) + 1}/${hoy.get(Calendar.YEAR)}"
-            if (tareaConHora.checkedRadioButtonId == 0){
-                nuevaTarea = Tarea(tituloTarea.text.toString(), descripcionTarea.text.toString(), Calendar.getInstance().get(Calendar.HOUR), Calendar.getInstance().get(Calendar.MINUTE), fechaString)
-            }else{
-                nuevaTarea = Tarea(tituloTarea.text.toString(), descripcionTarea.text.toString(), null, null, fechaString)
-            }
-            eventosList.add(nuevaTarea)
-            eventosAdapter.notifyDataSetChanged()
-        }
-
-        builder.setNegativeButton("Cancelar"){ dialog, _ ->
-            dialog.cancel()
-        }
-
-        builder.show()
-    }
-
-    fun mostrarEleccionHora(){
-        val contexto = requireContext()
-
-        val builder = AlertDialog.Builder(contexto)
-
-        val contenedorPadre = LinearLayout(contexto)
-
-        val reloj = TimePicker(contexto)
-        contenedorPadre.addView(reloj)
-
-        builder.setView(contenedorPadre)
-
-        builder.setPositiveButton("Aceptar"){ _, _ ->
-            val horas = reloj.hour.toString().padEnd(2, '0')
-            val minutos = reloj.minute.toString().padEnd(2, '0')
-            horaElegida.text = "$horas:$minutos"
-        }
-
-        builder.setNegativeButton("Cancelar"){ dialog, _ ->
-            dialog.cancel()
-        }
-
-        builder.show()
+        listener.cargaTarea(3)
     }
 }

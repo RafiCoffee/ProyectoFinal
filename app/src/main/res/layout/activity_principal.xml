@@ -47,6 +47,41 @@
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
+    <LinearLayout
+        android:id="@+id/pantallaSemiTransparente"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#80000000"
+        android:orientation="horizontal"
+        android:visibility="gone"
+        android:clickable="true"/>
+
+    <LinearLayout
+        android:id="@+id/pantallaSaveTarea"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@android:color/transparent"
+        android:orientation="horizontal"
+        android:paddingHorizontal="1dp"
+        android:visibility="gone">
+
+        <include layout="@layout/agregar_tarea_dialogo"/>
+
+    </LinearLayout>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/pantallaCodigoAmigo"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@android:color/transparent"
+        android:paddingTop="50dp"
+        android:paddingHorizontal="20dp"
+        android:visibility="gone">
+
+        <include layout="@layout/codigo_amigo"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
     <com.google.android.material.navigation.NavigationView
         android:id="@+id/barraLateral"
         android:layout_width="wrap_content"
@@ -85,7 +120,6 @@
                         android:id="@+id/fotoUsuarioImg"
                         android:layout_width="100dp"
                         android:layout_height="100dp"
-                        android:src="@drawable/foto_perfil"
                         android:scaleType="centerCrop"/>
 
                 </androidx.cardview.widget.CardView>

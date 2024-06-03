@@ -3,13 +3,13 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
-        android:id="@+id/configuracion"
-        android:title="Configuración"
+        android:id="@+id/idAmigo"
+        android:title="Codigo Amigo"
         app:showAsAction="never" />
 
     <item
-        android:id="@+id/salir"
-        android:title="Salir"
+        android:id="@+id/ayuda"
+        android:title="Como usar ZapeTask"
         app:showAsAction="never" />
 
 </menu>

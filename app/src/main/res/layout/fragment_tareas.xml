@@ -143,6 +143,11 @@
 
     </LinearLayout>
 
+    <ProgressBar
+        android:id="@+id/my_progress_bar"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
+
     <!--<FrameLayout
         android:id="@+id/mapContainer"
         android:layout_width="match_parent"

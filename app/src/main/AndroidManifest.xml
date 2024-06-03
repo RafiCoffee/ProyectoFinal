@@ -32,6 +32,10 @@
         android:name="com.google.android.geo.API_KEY"
         android:value="AIzaSyCAe3Vf4aZgbAHqcWA4UYSbDrpsYB9LfGI" />
 
+    <meta-data
+        android:name="com.google.firebase.messaging.default_notification_icon"
+        android:resource="@drawable/ic_launcher_foreground"/>
+
         <activity
             android:name=".ui.views.RegisterActivity"
             android:exported="true">
@@ -46,8 +50,12 @@
             android:exported="true">
         </activity>
 
+        <activity android:name=".ui.views.SplashActivity"
+            android:configChanges="uiMode"/>
+
         <activity
             android:name=".ui.views.MainActivity"
+            android:configChanges="uiMode"
             android:exported="true">
         </activity>
 
@@ -55,6 +63,24 @@
             android:name=".ui.views.PerfilActivity"
             android:exported="true">
         </activity>
+
+        <activity
+            android:name=".ui.views.InfoActivity"
+            android:exported="true">
+        </activity>
+
+        <activity
+            android:name=".ui.views.AddAmigoActivity"
+            android:exported="true">
+        </activity>
+
+        <service
+            android:name=".data.services.FirebaseMsgService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
 
         <receiver
             android:name=".ui.views.GeofenceBroadcastReceiver"

@@ -1,25 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:tools="http://schemas.android.com/tools"
-    xmlns:android="http://schemas.android.com/apk/res/android">
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
 
     <group android:menuCategory="container">
         <item
-            android:id="@+id/menu_option1"
+            android:id="@+id/perfilActivity"
             android:title="Perfil"/>
         <item
-            android:id="@+id/menu_option2"
+            android:id="@+id/notificacionesActivity"
             android:title="Notificaciones"/>
-    </group>
-    <!-- Agrega más opciones según sea necesario -->
-
-    <group android:menuCategory="container">
-        <item
-            android:id="@+id/opcion1"
-            android:title="Opcion 1"/>
 
         <item
-            android:id="@+id/opcion2"
-            android:title="Opcion 2"/>
+            android:id="@+id/amigosActivity"
+            android:title="Amigos"/>
+
+        <item
+            android:id="@+id/addAmigo"
+            android:title="Añadir Amigo"/>
     </group>
 
 </menu>

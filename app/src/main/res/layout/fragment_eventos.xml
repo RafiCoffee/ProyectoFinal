@@ -2,23 +2,19 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/fragmentoNotas"
+    android:id="@+id/fragmentoEventos"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.views.fragments.Notas">
+    android:padding="2dp"
+    tools:context=".ui.views.fragments.Eventos">
 
-    <ScrollView
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/my_recycler_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:padding="20dp">
-
-        <ListView
-            android:id="@+id/listaTareas"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            tools:listitem="@layout/list_tareas"/>
-
-    </ScrollView>
+        android:gravity="center"
+        tools:layout_editor_absoluteX="-185dp"
+        tools:layout_editor_absoluteY="-282dp" />
 
     <ImageView
         android:id="@+id/annadirElementoBt"
@@ -30,16 +26,5 @@
         app:tint="?attr/colorPrimary"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"/>
-
-    <ImageView
-        android:id="@+id/eliminarElemento"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
-        android:src="@drawable/papelera_icon"
-        android:layout_marginBottom="10dp"
-        android:layout_marginEnd="10dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:tint="?attr/colorPrimary"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
