@@ -17,24 +17,14 @@ import dagger.hilt.components.SingletonComponent
 @InstallIn(SingletonComponent::class)
 object ServicesModule {
     @Provides
-    fun provideGeneralService(): GeneralService{
-        return GeneralService(provideFirebaseService())
-    }
+    fun provideGeneralService(): GeneralService{ return GeneralService(provideFirebaseService()) }
     @Provides
-    fun provideUserService(): UserService{
-        return UserService(provideFirebaseService(), provideNotificationService())
-    }
+    fun provideUserService(): UserService{ return UserService(provideFirebaseService(), provideNotificationService()) }
     @Provides
-    fun provideFirebaseService(): FirebaseService{
-        return FirebaseService()
-    }
+    fun provideFirebaseService(): FirebaseService{ return FirebaseService() }
     @Provides
-    fun provideTareasService(): TareasService{
-        return TareasService(provideFirebaseService(), provideNotificationService())
-    }
+    fun provideTareasService(): TareasService{ return TareasService(provideFirebaseService(), provideNotificationService()) }
 
     @Provides
-    fun provideNotificationService(): NotificationService{
-        return NotificationService(provideFirebaseService())
-    }
+    fun provideNotificationService(): NotificationService{ return NotificationService(provideFirebaseService()) }
 }

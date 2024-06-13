@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.ProgressBar
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
@@ -35,6 +36,8 @@ class InfoActivity: AppCompatActivity() {
 
     private lateinit var atrasBt: ImageView
     private lateinit var loadBar: ProgressBar
+    private lateinit var sinNotisMsg: TextView
+    private lateinit var sinAmigosMsg: TextView
 
     @Inject lateinit var generalService: GeneralService
     @Inject lateinit var userService: UserService
@@ -43,6 +46,7 @@ class InfoActivity: AppCompatActivity() {
     @Inject lateinit var firebaseService: FirebaseService
 
     private lateinit var infoBinding: InfoActivityBinding
+    private var infoMode = -1
 
     private val viewModel: InfoViewModel by viewModels {
         val repositorioAmigos = FriendRepository(userService)
@@ -58,13 +62,11 @@ class InfoActivity: AppCompatActivity() {
         iniciarEventos()
         registerLiveData()
 
-        when (intent.getIntExtra("infoMode", -1)) {
-            1 -> {
-                viewModel.loadNotifications()
-            }
-            2 -> {
-                viewModel.loadActualFriends()
-            }
+        infoMode = intent.getIntExtra("infoMode", -1)
+
+        when (infoMode) {
+            1 -> viewModel.loadNotifications()
+            2 -> viewModel.loadActualFriends()
             else -> {
                 Toast.makeText(this, "Error al acceder a la pantalla", Toast.LENGTH_SHORT).show()
                 finish()
@@ -74,6 +76,8 @@ class InfoActivity: AppCompatActivity() {
 
     fun asociarElementos(){
         atrasBt = findViewById(R.id.atrasBt)
+        sinNotisMsg = findViewById(R.id.mensaje_sin_notificaciones)
+        sinAmigosMsg = findViewById(R.id.mensaje_sin_amigos)
         loadBar = infoBinding.loadBar
         recyclerView = infoBinding.infoRecyclerView
         recyclerView.layoutManager = LinearLayoutManager(this)
@@ -97,11 +101,21 @@ class InfoActivity: AppCompatActivity() {
         viewModel.notificationList.observe(this){
             viewModel.setNotificationAdapter(recyclerView)
             recyclerView.adapter?.notifyDataSetChanged()
+            if (it.isEmpty() && infoMode == 1){
+                sinNotisMsg.visibility = LinearLayout.VISIBLE
+            }else{
+                sinNotisMsg.visibility = LinearLayout.GONE
+            }
         }
 
         viewModel.actualFriendList.observe(this){
             viewModel.setActualFriendAdapter(recyclerView)
             recyclerView.adapter?.notifyDataSetChanged()
+            if (it.isEmpty() && infoMode == 2){
+                sinAmigosMsg.visibility = LinearLayout.VISIBLE
+            }else{
+                sinAmigosMsg.visibility = LinearLayout.GONE
+            }
         }
     }
 }

@@ -19,19 +19,10 @@ import java.util.UUID
 import javax.inject.Inject
 
 class FirebaseService @Inject constructor() {
-
-    fun getAuth(): FirebaseAuth {
-        return FirebaseAuth.getInstance()
-    }
-    fun getUserId(): String{
-        return getAuth().currentUser!!.uid
-    }
-    fun getStorage(): FirebaseStorage {
-        return FirebaseStorage.getInstance()
-    }
-    fun getDatabase(): FirebaseDatabase {
-        return FirebaseDatabase.getInstance()
-    }
+    fun getAuth(): FirebaseAuth { return FirebaseAuth.getInstance() }
+    fun getUserId(): String{ return getAuth().currentUser!!.uid }
+    fun getStorage(): FirebaseStorage { return FirebaseStorage.getInstance() }
+    fun getDatabase(): FirebaseDatabase { return FirebaseDatabase.getInstance() }
 
     fun cerrarSesion(context: Context){
         val auth = getAuth()
@@ -45,7 +36,7 @@ class FirebaseService @Inject constructor() {
         }
     }
 
-    fun subirImagen(context: Context, imagen: Uri, currentUser: Usuario){
+    fun subirImagen(context: Context, imagen: Uri, currentUser: Usuario, callback: (Boolean) -> Unit){
         val stream = context.contentResolver.openInputStream(imagen)
         val imageName = "${UUID.randomUUID()}.jpg"
         val imagesRef = getStorage().reference.child("images/${imageName}")
@@ -72,12 +63,16 @@ class FirebaseService @Inject constructor() {
                 )
 
                 referenciaUsuario.updateChildren(actualizacionUsuario)
-                    .addOnSuccessListener {
+                    .addOnCompleteListener {
                         // La actualización fue exitosa
+                        if(it.isSuccessful){
+                            callback(true)
+                        }
                         println("Usuario actualizado exitosamente")
                     }
                     .addOnFailureListener { error ->
                         // Ocurrió un error al actualizar el usuario
+                        callback(false)
                         println("Error al actualizar usuario: $error")
                     }
             }
@@ -96,7 +91,7 @@ class FirebaseService @Inject constructor() {
         }
     }
 
-    fun cambiarImagenUsuario(context: Context, imagenUsuario: ImageView, foto: String){
+    fun cambiarImagenUsuario(context: Context, imagenUsuario: ImageView, foto: String, callback: (Boolean) -> Unit){
         val imageName = foto
         val url = getStorage().getReferenceFromUrl("gs://zapetask-api.appspot.com/images/$imageName")
         val contexto: Any = try {
@@ -115,7 +110,9 @@ class FirebaseService @Inject constructor() {
                 Glide.with(context)
                     .load(it).into(imagenUsuario)
             }
+            callback(true)
         }.addOnFailureListener {
+            callback(false)
             //Manejar Error
         }
     }

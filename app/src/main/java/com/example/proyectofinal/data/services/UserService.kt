@@ -115,8 +115,8 @@ class UserService @Inject constructor(private var firebaseService: FirebaseServi
 
     suspend fun getAllActualFriends(): List<Amigo> = suspendCancellableCoroutine { continuation ->
         val amigosRecuperados: MutableList<Amigo> = mutableListOf()
-        val currentUser = firebaseService.getAuth().currentUser
-        val usersRef = firebaseService.getDatabase().getReference("usuario/${currentUser?.uid}/Amigos")
+        val userId = firebaseService.getUserId()
+        val usersRef = firebaseService.getDatabase().getReference("usuario/${userId}/Amigos")
 
         val listener = object : ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
@@ -124,7 +124,9 @@ class UserService @Inject constructor(private var firebaseService: FirebaseServi
                     val amigo = friendSnapshot.getValue(Amigo::class.java)
 
                     if(amigo != null){
-                        amigosRecuperados.add(amigo)
+                        if(amigo.estadoSolicitud == 3){
+                            amigosRecuperados.add(amigo)
+                        }
                     }
 
                 }
@@ -145,8 +147,8 @@ class UserService @Inject constructor(private var firebaseService: FirebaseServi
 
     fun addFriendToUser(nuevoAmigo: Amigo){
         nuevoAmigo.estadoSolicitud = 1
-        val currentUser = firebaseService.getAuth().currentUser
-        val userRef = firebaseService.getDatabase().getReference().child("usuario/${currentUser?.uid}")
+        val userId = firebaseService.getUserId()
+        val userRef = firebaseService.getDatabase().getReference().child("usuario/${userId}")
 
         userRef.child("Amigos").get().addOnSuccessListener { dataSnapshot ->
             val amigosList = dataSnapshot.getValue(object : GenericTypeIndicator<MutableList<Amigo>>() {}) ?: mutableListOf()
@@ -188,8 +190,8 @@ class UserService @Inject constructor(private var firebaseService: FirebaseServi
     }
 
     fun acceptFriend(idAmigo: String){
-        val currentUser = firebaseService.getAuth().currentUser
-        val userRef = firebaseService.getDatabase().getReference().child("usuario/${currentUser?.uid}")
+        val userId = firebaseService.getUserId()
+        val userRef = firebaseService.getDatabase().getReference().child("usuario/${userId}")
 
         userRef.child("Amigos").get().addOnSuccessListener { dataSnapshot ->
             val amigosList = dataSnapshot.getValue(object : GenericTypeIndicator<MutableList<Amigo>>() {}) ?: mutableListOf()
@@ -221,9 +223,8 @@ class UserService @Inject constructor(private var firebaseService: FirebaseServi
     }
 
     fun acceptFriendOtherUser(idAmigo: String){
-        val currentUser = firebaseService.getAuth().currentUser
+        val actualUserId = firebaseService.getUserId()
         val userRef = firebaseService.getDatabase().getReference().child("usuario/${idAmigo}")
-        val actualUserId = currentUser?.uid
 
         userRef.child("Amigos").get().addOnSuccessListener { dataSnapshot ->
             val amigosList = dataSnapshot.getValue(object : GenericTypeIndicator<MutableList<Amigo>>() {}) ?: mutableListOf()
@@ -254,7 +255,64 @@ class UserService @Inject constructor(private var firebaseService: FirebaseServi
     }
 
     fun rejectFriend(idAmigo: String){
+        val userId = firebaseService.getUserId()
+        val userRef = firebaseService.getDatabase().getReference().child("usuario/${userId}")
 
+        userRef.child("Amigos").get().addOnSuccessListener { dataSnapshot ->
+            val amigosList = dataSnapshot.getValue(object : GenericTypeIndicator<MutableList<Amigo>>() {}) ?: mutableListOf()
+            var index = -1
+
+            var amigoEncontrado = false
+            for (i in 0 until amigosList.size) {
+                if (amigosList[i].id == idAmigo) {
+                    index = i
+                    amigoEncontrado = true
+                    break
+                }
+            }
+
+            if (amigoEncontrado) {
+                userRef.child("Amigos/${index}").removeValue()
+                    .addOnSuccessListener {
+                        rejectFriendToOtherUser(idAmigo)
+                        //Eliminado
+                    }
+            } else {
+                println("Amigo no encontrado en la lista.")
+            }
+        }.addOnFailureListener {
+            println("Error al obtener lista de amigos: ${it.message}")
+        }
+    }
+
+    fun rejectFriendToOtherUser(idAmigo: String){
+        val userId = firebaseService.getUserId()
+        val userRef = firebaseService.getDatabase().getReference().child("usuario/${idAmigo}")
+
+        userRef.child("Amigos").get().addOnSuccessListener { dataSnapshot ->
+            val amigosList = dataSnapshot.getValue(object : GenericTypeIndicator<MutableList<Amigo>>() {}) ?: mutableListOf()
+            var index = -1
+
+            var amigoEncontrado = false
+            for (i in 0 until amigosList.size) {
+                if (amigosList[i].id == userId) {
+                    index = i
+                    amigoEncontrado = true
+                    break
+                }
+            }
+
+            if (amigoEncontrado) {
+                userRef.child("Amigos/${index}").removeValue()
+                    .addOnSuccessListener {
+                        //Eliminado
+                    }
+            } else {
+                println("Amigo no encontrado en la lista.")
+            }
+        }.addOnFailureListener {
+            println("Error al obtener lista de amigos: ${it.message}")
+        }
     }
 
     fun getUserById(userId: String, callback: (Usuario?) -> Unit){

@@ -8,6 +8,7 @@ import android.content.Context
 import android.content.Context.MODE_PRIVATE
 import android.content.Intent
 import android.content.SharedPreferences
+import android.net.Uri
 import android.provider.MediaStore
 import android.util.DisplayMetrics
 import android.view.Gravity
@@ -16,6 +17,7 @@ import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.DatePicker
 import android.widget.EditText
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.ListView
 import android.widget.TextView
@@ -208,6 +210,11 @@ class GeneralService @Inject constructor(private var firebaseService: FirebaseSe
         val windowManager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
         windowManager.defaultDisplay.getMetrics(displayMetrics)
         return displayMetrics.heightPixels
+    }
+
+    suspend fun cambiarImagen(imagen: ImageView, imageUri: Uri): Boolean{
+        imagen.setImageURI(imageUri)
+        return true
     }
 
 }

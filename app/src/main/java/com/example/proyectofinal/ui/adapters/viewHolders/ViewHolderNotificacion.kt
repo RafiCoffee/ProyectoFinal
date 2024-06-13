@@ -3,21 +3,16 @@ package com.example.proyectofinal.ui.adapters.viewHolders
 import android.os.Build
 import android.view.View
 import android.view.animation.AnimationUtils
-import android.widget.FrameLayout
-import android.widget.ImageView
 import android.widget.LinearLayout
 import androidx.annotation.RequiresApi
 import androidx.recyclerview.widget.RecyclerView
 import com.example.proyectofinal.R
-import com.example.proyectofinal.data.dataSource.dataBase.framework.NotifyTaskVariety
-import com.example.proyectofinal.data.models.Amigo
+import com.example.proyectofinal.data.framework.NotifyTaskVariety
 import com.example.proyectofinal.data.models.Notificacion
 import com.example.proyectofinal.data.repositories.NotificationRepository
 import com.example.proyectofinal.data.services.FirebaseService
-import com.example.proyectofinal.data.services.NotificationService
 import com.example.proyectofinal.data.services.TareasService
 import com.example.proyectofinal.data.services.UserService
-import com.example.proyectofinal.databinding.FriendLayoutBinding
 import com.example.proyectofinal.databinding.NotificationLayoutBinding
 
 @RequiresApi(Build.VERSION_CODES.Q)
@@ -48,24 +43,28 @@ class ViewHolderNotificacion (view: View, firebaseService: FirebaseService, user
                 binding.infoTarea.text = NotifyTaskVariety.devolverFrase(task?.nombreTarea!!)
             }
         }else{
-            var agregado = false
+            var decidido = false
 
             binding.tareaNotificationLayout.visibility = LinearLayout.GONE
             userService.getUserById(notificacion.idInfo){ user ->
-                firebaseService.cambiarImagenUsuario(view.context, binding.fotoUsuarioImg, user?.foto!!)
+                firebaseService.cambiarImagenUsuario(view.context, binding.fotoUsuarioImg, user?.foto!!){}
                 binding.infoAmigo.text = "El usuario ${user.nombre} quiere ser tu amigo"
             }
 
-            binding.acceptFriendBt.setOnClickListener {
-                binding.rejectFriendBt.visibility = LinearLayout.GONE
-                userService.acceptFriend(notificacion.idInfo)
-                notificationRepository.eliminarNotificacion(notificacion.id)
-            }
+            if(!decidido){
+                binding.acceptFriendBt.setOnClickListener {
+                    decidido = true
+                    binding.rejectFriendBt.visibility = LinearLayout.GONE
+                    userService.acceptFriend(notificacion.idInfo)
+                    notificationRepository.eliminarNotificacion(notificacion.id)
+                }
 
-            binding.rejectFriendBt.setOnClickListener {
-                binding.acceptFriendBt.visibility = LinearLayout.GONE
-                userService.rejectFriend(notificacion.idInfo)
-                notificationRepository.eliminarNotificacion(notificacion.id)
+                binding.rejectFriendBt.setOnClickListener {
+                    decidido = true
+                    binding.acceptFriendBt.visibility = LinearLayout.GONE
+                    userService.rejectFriend(notificacion.idInfo)
+                    notificationRepository.eliminarNotificacion(notificacion.id)
+                }
             }
         }
     }

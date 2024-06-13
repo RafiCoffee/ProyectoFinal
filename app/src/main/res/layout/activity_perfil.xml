@@ -24,95 +24,93 @@
 
         </androidx.appcompat.widget.Toolbar>
 
-        <ScrollView
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
             app:layout_constraintTop_toBottomOf="@id/barraSuperior"
-            app:layout_constraintBottom_toBottomOf="parent">
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
 
             <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/contenedorFotoPerfil"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent">
+                android:layout_height="350dp"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent">
 
-                <androidx.constraintlayout.widget.ConstraintLayout
-                    android:id="@+id/contenedorFotoPerfil"
+                <ImageView
+                    android:id="@+id/fotoPerfil"
                     android:layout_width="match_parent"
-                    android:layout_height="350dp"
+                    android:layout_height="match_parent"
+                    android:scaleType="centerCrop"
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent">
+                    app:layout_constraintEnd_toEndOf="parent"/>
 
-                    <ImageView
-                        android:id="@+id/fotoPerfil"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:scaleType="centerCrop"
-                        app:layout_constraintTop_toTopOf="parent"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintEnd_toEndOf="parent"/>
-
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:background="@drawable/vinneta"/>
-
-                    <TextView
-                        android:id="@+id/nombreUsuario"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="15dp"
-                        android:text="Ruben"
-                        android:textSize="70sp"
-                        android:textStyle="bold"
-                        android:textColor="@color/Blanco"
-                        android:outlineProvider="bounds"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintStart_toStartOf="parent"/>
-
-                </androidx.constraintlayout.widget.ConstraintLayout>
-
-                <androidx.constraintlayout.widget.ConstraintLayout
-                    android:id="@+id/cosas"
+                <View
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    app:layout_constraintTop_toBottomOf="@id/contenedorFotoPerfil"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent">
+                    android:layout_height="match_parent"
+                    android:background="@drawable/vinneta"/>
 
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:text="Cosas"
-                        android:textSize="50sp"/>
-
-
-                </androidx.constraintlayout.widget.ConstraintLayout>
-
-                <androidx.constraintlayout.widget.ConstraintLayout
-                    android:id="@+id/contenedorCambiarImagenBt"
+                <TextView
+                    android:id="@+id/nombreUsuario"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    app:layout_constraintTop_toBottomOf="@id/cosas"                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent">
-
-                    <Button
-                        android:id="@+id/cambiarImagenBt"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:background="@drawable/borde_redondeado_color_primary"
-                        android:text="Cambiar Foto De Perfil"
-                        android:paddingHorizontal="30dp"
-                        android:textSize="20sp"
-                        app:layout_constraintTop_toTopOf="parent"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintEnd_toEndOf="parent"/>
-
-                </androidx.constraintlayout.widget.ConstraintLayout>
+                    android:layout_marginStart="15dp"
+                    android:text="Ruben"
+                    android:textSize="70sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/Blanco"
+                    android:outlineProvider="bounds"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"/>
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 
-        </ScrollView>
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/contenedorCambiarImagenBt"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingTop="50dp"
+                app:layout_constraintTop_toBottomOf="@id/contenedorFotoPerfil"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent">
+
+                <Button
+                    android:id="@+id/cambiarImagenBt"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/borde_redondeado_color_primary"
+                    android:text="Cambiar Foto De Perfil"
+                    android:paddingHorizontal="30dp"
+                    android:textSize="20sp"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"/>
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recyclerViewTareasUsuario"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                app:layout_constraintTop_toBottomOf="@id/contenedorCambiarImagenBt"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"/>
+
+            <ProgressBar
+                android:id="@+id/loadBar"
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"/>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>

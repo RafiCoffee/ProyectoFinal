@@ -83,14 +83,9 @@ class ZapetMedia : Fragment() {
     }
 
     private fun updateTareasRecyclerViews(tareasPorAmigo: Map<String, List<Tarea>>, view: View) {
-        // Crear un RecyclerView de tareas para cada amigo
         for ((amigoId, tareas) in tareasPorAmigo) {
             val recyclerView = view.findViewById<RecyclerView>(amigoId.hashCode())
             recyclerView.layoutManager = LinearLayoutManager(requireContext())
-            /*var t = TextView(requireContext())
-            t.text = "HOLAAAAAAAAAA"
-            t.textSize = 40f
-            recyclerView.addView(t)*/
 
             val friendTaskList = tareas.toMutableList()
 
@@ -114,6 +109,11 @@ class ZapetMedia : Fragment() {
         viewModel.actualMediaFriendList.observe(viewLifecycleOwner){
             viewModel.setMediaFriendAdapter(mainRecyclerView)
             mainRecyclerView.adapter?.notifyDataSetChanged()
+            if (it.isEmpty()){
+                sinAmigosMsg.visibility = LinearLayout.VISIBLE
+            }else{
+                sinAmigosMsg.visibility = LinearLayout.GONE
+            }
         }
 
         viewModel.tareasMediaList.observe(viewLifecycleOwner){

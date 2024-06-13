@@ -17,7 +17,10 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @RequiresApi(Build.VERSION_CODES.Q)
-class FriendViewModel @Inject constructor(friendRepository: FriendRepository, userService: UserService, firebaseService: FirebaseService): ViewModel() {
+class FriendViewModel @Inject constructor(friendRepository: FriendRepository,
+                                          userService: UserService,
+                                          firebaseService: FirebaseService): ViewModel() {
+
     val friendRepository by lazy { friendRepository }
     val userService by lazy { userService }
     val firebaseService by lazy { firebaseService }

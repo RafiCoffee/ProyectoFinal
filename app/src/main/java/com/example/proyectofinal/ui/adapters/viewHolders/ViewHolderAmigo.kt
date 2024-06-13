@@ -1,9 +1,11 @@
 package com.example.proyectofinal.ui.adapters.viewHolders
 
+import android.os.Build
 import android.view.View
 import android.view.animation.AnimationUtils
 import android.widget.FrameLayout
 import android.widget.ImageView
+import androidx.annotation.RequiresApi
 import androidx.recyclerview.widget.RecyclerView
 import com.example.proyectofinal.R
 import com.example.proyectofinal.data.models.Amigo
@@ -11,6 +13,7 @@ import com.example.proyectofinal.data.services.FirebaseService
 import com.example.proyectofinal.data.services.UserService
 import com.example.proyectofinal.databinding.FriendLayoutBinding
 
+@RequiresApi(Build.VERSION_CODES.Q)
 class ViewHolderAmigo (view: View, firebaseService: FirebaseService, userService: UserService) : RecyclerView.ViewHolder (view) {
     private var firebaseService = firebaseService
     private var userService = userService
@@ -31,7 +34,7 @@ class ViewHolderAmigo (view: View, firebaseService: FirebaseService, userService
     fun renderize(amigo: Amigo) {
         var agregado = false
 
-        firebaseService.cambiarImagenUsuario(view.context, binding.fotoUsuarioImg, amigo.foto!!)
+        firebaseService.cambiarImagenUsuario(view.context, binding.fotoUsuarioImg, amigo.foto!!){}
         binding.nombreUsuario.text = amigo.nombre
         binding.codigoAmigo.text = amigo.idAmigo
 

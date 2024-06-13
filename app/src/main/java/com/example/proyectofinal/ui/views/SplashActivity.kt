@@ -20,6 +20,7 @@ import com.example.proyectofinal.data.callbacks.UsuarioCallback
 import com.example.proyectofinal.data.models.Usuario
 import com.example.proyectofinal.data.services.GeneralService
 import com.example.proyectofinal.data.services.NotificationService
+import com.example.proyectofinal.data.services.TareasService
 import com.example.proyectofinal.data.services.UserService
 import com.example.proyectofinal.ui.modelView.UsuarioViewModel
 import com.example.proyectofinal.ui.modelView.UsuarioViewModelFactory
@@ -42,6 +43,7 @@ class SplashActivity : AppCompatActivity(), UsuarioCallback {
     @Inject lateinit var generalService: GeneralService
     @Inject lateinit var userService: UserService
     @Inject lateinit var notificationService: NotificationService
+    @Inject lateinit var tareasService: TareasService
 
     private val viewModel: UsuarioViewModel by viewModels {
         UsuarioViewModelFactory(userService)
@@ -73,7 +75,7 @@ class SplashActivity : AppCompatActivity(), UsuarioCallback {
             if (isLoaded) {
                 if(usuario != null){
                     lifecycleScope.launch {
-                        comprobarNotificacionesYActualizar()
+                        comprobarTareasNotificacionesYActualizar()
                     }
                 }else{
                     errorAlAcceder(false, "Error al recuperar los datos del usuario")
@@ -199,8 +201,9 @@ class SplashActivity : AppCompatActivity(), UsuarioCallback {
         }
     }
 
-    private suspend fun comprobarNotificacionesYActualizar() {
+    private suspend fun comprobarTareasNotificacionesYActualizar() {
         try {
+            tareasService.comprobarTareas()
             notificationService.comprobarNotificacionesTarea()
 
             dataLoaded = true

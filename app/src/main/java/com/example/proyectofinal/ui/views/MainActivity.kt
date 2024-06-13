@@ -5,6 +5,7 @@ import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.app.Notification
 import android.content.ActivityNotFoundException
 import android.content.Intent
@@ -21,6 +22,7 @@ import android.widget.LinearLayout
 import android.widget.Switch
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
@@ -65,6 +67,7 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class MainActivity: AppCompatActivity(), UsuarioCallback {
     lateinit var usuarioLogueado: Usuario
+    //Foto
 
     private lateinit var navController: NavController
     private lateinit var drawerLayout: DrawerLayout
@@ -94,6 +97,8 @@ class MainActivity: AppCompatActivity(), UsuarioCallback {
 
     private var alturaPantalla = 0.0f
     private var anchoPantalla = 0.0f
+
+    private lateinit var startForResult: ActivityResultLauncher<Intent>
 
     //PERMISOS
     val requestPermissionLauncher = registerForActivityResult(
@@ -169,9 +174,18 @@ class MainActivity: AppCompatActivity(), UsuarioCallback {
         codigoAmigoTxt = findViewById(R.id.codigoAmigoTxt)
         atrasCodigoAmigoBt = findViewById(R.id.atrasCodigoAmigoBt)
 
-        if(!this.isDestroyed){ firebaseService.cambiarImagenUsuario(this, fotoPerfil, usuarioLogueado.foto!!) }
+        if(!this.isDestroyed){ firebaseService.cambiarImagenUsuario(this, fotoPerfil, usuarioLogueado.foto!!){} }
         usernameTxt.text = usuarioLogueado.nombre
         codigoAmigoTxt.text = usuarioLogueado.idAmigo
+
+        startForResult = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                val fotoActualizada = result.data?.getBooleanExtra("fotoActualizada", false) ?: false
+                if (fotoActualizada) {
+                    userViewModel.loadUsuariosInit()
+                }
+            }
+        }
     }
     fun iniciarEventos(){
         cerrarSesionBt.setOnClickListener {
@@ -263,28 +277,28 @@ class MainActivity: AppCompatActivity(), UsuarioCallback {
                     val intentPerfilActivity = Intent(this, PerfilActivity::class.java).apply {
                         putExtra("usuario", usuarioLogueado)
                     }
-                    mainIntents(intentPerfilActivity)
+                    mainIntents(intentPerfilActivity, true)
                 }
 
                 R.id.notificacionesActivity -> {
                     val intentInfoActivity = Intent(this, InfoActivity::class.java).apply {
                         putExtra("infoMode", 1)
                     }
-                    mainIntents(intentInfoActivity)
+                    mainIntents(intentInfoActivity, false)
                 }
 
                 R.id.amigosActivity -> {
                     val intentInfoActivity = Intent(this, InfoActivity::class.java).apply {
                         putExtra("infoMode", 2)
                     }
-                    mainIntents(intentInfoActivity)
+                    mainIntents(intentInfoActivity, false)
                 }
 
                 R.id.addAmigo -> {
                     val intentAddFriendActivity = Intent(this, AddAmigoActivity::class.java).apply {
                         putExtra("usuario", usuarioLogueado)
                     }
-                    mainIntents(intentAddFriendActivity)
+                    mainIntents(intentAddFriendActivity, false)
                 }
             }
 
@@ -380,11 +394,21 @@ class MainActivity: AppCompatActivity(), UsuarioCallback {
         transaction.commit()
     }
 
-    private fun mainIntents(intent: Intent){
+    private fun mainIntents(intent: Intent, expectedResult: Boolean){
         try {
-            startActivity(intent)
+            if(expectedResult){
+                startForResult.launch(intent)
+            }else{
+                startActivity(intent)
+            }
         }catch (e : ActivityNotFoundException){
             Toast.makeText(this, "Error al acceder a la pantalla", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    fun registerLiveData(){
+        userViewModel.loggedUser.observe(this){
+            actualizarUsuario(it)
         }
     }
 
@@ -411,11 +435,11 @@ class MainActivity: AppCompatActivity(), UsuarioCallback {
         return true
     }
 
-    //RequestCode 10 -> Actualizar Foto De Perfil
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == 10) {
-            firebaseService.cambiarImagenUsuario(this, fotoPerfil, usuarioLogueado.foto!!)
+    fun actualizarUsuario(usuario: Usuario?){
+        if(usuario != null){
+            usuarioLogueado = usuario
+
+            if(!this.isDestroyed) { firebaseService.cambiarImagenUsuario(this, fotoPerfil, usuarioLogueado.foto!!){} }
         }
     }
 
@@ -428,6 +452,7 @@ class MainActivity: AppCompatActivity(), UsuarioCallback {
             iniciarNav()
             iniciarBarraSuperiorYLateral()
             iniciarEventos()
+            registerLiveData()
         }else{
             //Salir
             generalService.setUsuarioLogueado(this, false)

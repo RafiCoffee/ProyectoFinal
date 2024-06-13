@@ -1,6 +1,8 @@
 package com.example.proyectofinal.ui.modelView
 
+import android.os.Build
 import android.util.Log
+import androidx.annotation.RequiresApi
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -13,6 +15,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+@RequiresApi(Build.VERSION_CODES.Q)
 @HiltViewModel
 class UsuarioViewModel @Inject constructor(userService: UserService): ViewModel() {
     val userService by lazy { userService }
@@ -25,6 +28,7 @@ class UsuarioViewModel @Inject constructor(userService: UserService): ViewModel(
 
     fun loadUsuariosInit() {
         viewModelScope.launch {
+            _userLoaded.value = false
             var usuarioActual: Usuario? = null
             userService.obtenerDatosUsuarioActual{ usuarioRecuperado ->
                 usuarioActual = usuarioRecuperado
@@ -43,7 +47,9 @@ class UsuarioViewModel @Inject constructor(userService: UserService): ViewModel(
     }
 
     fun setLoggedUser(user: Usuario){
+        _userLoaded.value = false
         _loggedUser.value = user
+        _userLoaded.value = true
     }
 
     /*fun agregarUsuarioRepo(nuevaTarea: Tarea){
@@ -94,6 +100,7 @@ class UsuarioViewModel @Inject constructor(userService: UserService): ViewModel(
 }
 
 @Suppress("UNCHECKED_CAST")
+@RequiresApi(Build.VERSION_CODES.Q)
 class UsuarioViewModelFactory(private val userService: UserService) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         return UsuarioViewModel(userService) as T

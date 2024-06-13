@@ -12,6 +12,7 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ValueEventListener
 import kotlinx.coroutines.suspendCancellableCoroutine
 import java.text.SimpleDateFormat
+import java.util.Calendar
 import java.util.Date
 import javax.inject.Inject
 import kotlin.coroutines.resume
@@ -104,19 +105,54 @@ class NotificationService @Inject constructor(private var firebaseService: Fireb
                 val tareasRef = firebaseService.getDatabase().getReference("tareas")
 
                 // Lista de tareas pendientes
+                val notificacionesEliminadas = mutableListOf<Notificacion>()
                 val tareasPendientes = notificacionesRecuperadas.mapNotNull { notificacion ->
                     tareasRef.child(notificacion.idInfo).get().continueWith { task ->
                         val tarea = task.result.getValue(Tarea::class.java)
                         if (tarea != null) {
-                            val fechaTarea = if(tarea.hora.isEmpty()){
-                                dateFormat.parse(tarea.fecha)!!
-                            }else{
-                                dateTimeFormat.parse("${tarea.fecha}-${tarea.hora}")!!
-                            }
+                            if(!tarea.completada){
+                                val fechaTarea = if(tarea.hora.isEmpty()){
+                                    currentDate.hours = 0
+                                    currentDate.minutes = 0
+                                    currentDate.seconds = 0
+                                    dateFormat.parse(tarea.fecha)!!
+                                }else{
+                                    dateTimeFormat.parse("${tarea.fecha}-${tarea.hora}")!!
+                                }
 
-                            if(fechaTarea.before(currentDate)){
-                                notificacion.seMuestra = true
+                                val calendar = Calendar.getInstance()
+                                calendar.time = fechaTarea
+                                calendar.add(Calendar.DAY_OF_YEAR, -1)
+                                val fechaTareaMenos1Dia = calendar.time
+                                calendar.time = fechaTarea
+                                calendar.add(Calendar.DAY_OF_YEAR, 1)
+                                val fechaTareaMas1Dia = calendar.time
+                                calendar.time = currentDate
+                                calendar.add(Calendar.DAY_OF_YEAR, -1)
+                                val currentDateMenos1Dia = calendar.time
+
+                                if(fechaTareaMas1Dia.after(currentDateMenos1Dia)){
+                                    notificacion.seMuestra = true
+                                }else if(fechaTarea.before(currentDate)){
+                                    notificacionesEliminadas.add(notificacion)
+                                    notificationRef.child(notificacion.id).removeValue()
+                                        .addOnSuccessListener {
+                                            //Eliminado
+                                        }
+                                }
+                            }else{
+                                notificacionesRecuperadas.remove(notificacion)
+                                notificationRef.child(notificacion.id).removeValue()
+                                    .addOnSuccessListener {
+                                        //Eliminado
+                                    }
                             }
+                        }else{
+                            notificacionesRecuperadas.remove(notificacion)
+                            notificationRef.child(notificacion.id).removeValue()
+                                .addOnSuccessListener {
+                                    //Eliminado
+                                }
                         }
                         notificacion
                     }
@@ -124,6 +160,7 @@ class NotificationService @Inject constructor(private var firebaseService: Fireb
 
                 // Esperar a que todas las tareas se completen
                 Tasks.whenAllComplete(tareasPendientes).addOnCompleteListener {
+                    notificacionesRecuperadas.removeAll(notificacionesEliminadas)
                     // Actualizar las notificaciones en la base de datos
                     for (notificacion in notificacionesRecuperadas) {
                         notificationRef.child(notificacion.id).setValue(notificacion)

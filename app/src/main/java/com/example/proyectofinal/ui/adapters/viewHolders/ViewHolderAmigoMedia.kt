@@ -24,7 +24,7 @@ class ViewHolderAmigoMedia (view: View, firebaseService: FirebaseService) : Recy
     }
 
     fun renderize(amigo: Amigo) {
-        firebaseService.cambiarImagenUsuario(view.context, binding.fotoUsuarioImg, amigo.foto!!)
+        firebaseService.cambiarImagenUsuario(view.context, binding.fotoUsuarioImg, amigo.foto!!){}
         binding.nombreAmigo.text = amigo.nombre
 
         binding.recyclerView.id = amigo.id.hashCode()

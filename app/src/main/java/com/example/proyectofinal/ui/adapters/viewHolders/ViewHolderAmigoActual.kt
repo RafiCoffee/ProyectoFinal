@@ -22,7 +22,7 @@ class ViewHolderAmigoActual (view: View, firebaseService: FirebaseService) : Rec
     }
 
     fun renderize(amigo: Amigo) {
-        firebaseService.cambiarImagenUsuario(view.context, binding.fotoUsuarioImg, amigo.foto!!)
+        firebaseService.cambiarImagenUsuario(view.context, binding.fotoUsuarioImg, amigo.foto!!){}
         binding.nombreUsuario.text = amigo.nombre
     }
 }

@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?attr/background"
+    android:background="?attr/colorOnBackground"
     tools:context=".ui.views.InfoActivity">
 
     <androidx.appcompat.widget.Toolbar
@@ -27,20 +27,37 @@
         android:id="@+id/infoRecyclerView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
+        android:paddingVertical="20dp"
         app:layout_constraintTop_toBottomOf="@id/barraSuperior"
         app:layout_constraintBottom_toBottomOf="parent"/>
 
     <ProgressBar
         android:id="@+id/loadBar"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_marginHorizontal="-5dp"
-        android:paddingVertical="10dp"
-        android:visibility="gone"
-        android:background="@drawable/bordes_verticales_separadores"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
         app:layout_constraintTop_toBottomOf="@id/barraSuperior"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
+
+    <TextView
+        android:id="@+id/mensaje_sin_amigos"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:text="No tienes amigos agregados"
+        android:textSize="40sp"
+        android:textAlignment="center"
+        android:visibility="gone"/>
+
+    <TextView
+        android:id="@+id/mensaje_sin_notificaciones"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:text="Tu bandeja de notificaciones está vacia"
+        android:textSize="40sp"
+        android:textAlignment="center"
+        android:visibility="gone"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -25,8 +25,8 @@ import com.example.proyectofinal.ui.modelView.FriendViewModelFactory
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
-@AndroidEntryPoint
 @RequiresApi(Build.VERSION_CODES.Q)
+@AndroidEntryPoint
 class AddAmigoActivity: AppCompatActivity() {
     private lateinit var usuarioLogueado: Usuario
     private lateinit var recyclerView: RecyclerView
