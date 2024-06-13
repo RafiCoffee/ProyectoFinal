@@ -8,7 +8,7 @@ object NotifyTaskVariety {
 
     val finFrases : Array<String> = arrayOf(".", " te esta esperando.", ".", ".")
     fun devolverFrase(nombreTarea: String): String{
-        val fraseIndex = Random(1).nextInt()
+        val fraseIndex = Random(1).nextInt(inicioFrases.size)
         val frase = inicioFrases[fraseIndex] + nombreTarea + finFrases[fraseIndex]
         return frase
     }
