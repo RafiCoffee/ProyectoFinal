@@ -113,7 +113,10 @@ class SaveDialogue(myRecyclerView: RecyclerView, pantallasaveTarea: LinearLayout
 
         saveTarea.setOnClickListener {
             val nuevaTarea = saveTarea(tipoTarea, fechaActual, recordatorioElegido)
-            if(tareaEditable != null) nuevaTarea?.fechaCompletada = "${Calendar.getInstance().get(Calendar.DAY_OF_MONTH)}/${Calendar.getInstance().get(Calendar.MONTH) + 1}/${Calendar.getInstance().get(Calendar.YEAR)}"
+            if(tareaEditable != null){
+                nuevaTarea?.id = tareaEditable.id
+                nuevaTarea?.fechaCompletada = tareaEditable.fechaCompletada
+            }
 
             if(nuevaTarea != null){
                 viewModel.viewModelScope.launch {
